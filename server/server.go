@@ -38,8 +38,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	println("Requisição inicializada")
 	defer println("Requisição finalizada")
 
-	ctx, cancel := context.WithTimeout(ctx, time.Millisecond*2000)
+	ctx, cancel := context.WithTimeout(ctx, time.Second*2)
+	ctxDB, cancel2 := context.WithTimeout(ctx, time.Second*1)
 	defer cancel()
+	defer cancel2()
 
 	db, err := gorm.Open(sqlite.Open("../db.sqlite"), &gorm.Config{})
 	if err != nil {
@@ -90,7 +92,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	money := data["USDBRL"]
-	err = db.Create(&money).Error
+	err = db.WithContext(ctxDB).Create(&money).Error
 	if err != nil {
 		fmt.Println("Error on saving data to database", err)
 		return
